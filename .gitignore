@@ -79,3 +79,10 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/visualstudiocode,c++,linux,windows
+
+# Custom
+# Test files
+a.out
+
+# Tests
+test/*
