@@ -12,5 +12,10 @@
 #include <regex>
 #include <thread>
 #include <boost/asio.hpp>
+#include "external/json.hpp" // Add json support
+
+namespace webserver{
+    typedef boost::asio::ip::tcp::socket HTTP;
+}
 
 #endif // COMMON_HPP
