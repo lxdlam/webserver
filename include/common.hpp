@@ -9,13 +9,19 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
 
+#include <string>
 #include <regex>
 #include <thread>
+#include <map> // key-value container
+#include <unordered_map>
 #include <boost/asio.hpp>
-#include "external/json.hpp" // Add json support
+#include <boost/asio/ssl.hpp> // https support
+#include "external/json.hpp"  // json support
 
-namespace webserver{
-    typedef boost::asio::ip::tcp::socket HTTP;
+namespace WebServer
+{
+typedef boost::asio::ip::tcp::socket HTTP;    // HTTP socket type
+typedef boost::asio::ssl::stream<HTTP> HTTPS; // HTTPS stream, which include a nomal HTTP sockets
 }
 
 #endif // COMMON_HPP
