@@ -29,7 +29,7 @@ template <typename socket>
 class BaseServer
 {
 public:
-  explicit BaseServer() : port(8000), isLog(false) {} // set port to 8000
+  explicit BaseServer() : port(8000), isLog(false) {} // set port to 8000, no log
   BaseServer(const BaseServer &) = delete;            // avoiding copy
   BaseServer(BaseServer &&) = delete;                 // avoiding copy
   ~BaseServer() = default;                            // using default deconstructor
