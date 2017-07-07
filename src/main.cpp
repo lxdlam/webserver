@@ -6,7 +6,7 @@
  * Date: 2017/07/06
  * Description: 主程序
  */
-#include "../include/common.h"
+#include "../include/common.hpp"
 
 int main()
 {

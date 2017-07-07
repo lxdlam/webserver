@@ -11,7 +11,7 @@
 
 #include <string>
 #include <regex>
-#include <thread>
+#include <vector>
 #include <map> // key-value container
 #include <unordered_map>
 #include <boost/asio.hpp>
@@ -22,6 +22,22 @@ namespace WebServer
 {
 typedef boost::asio::ip::tcp::socket HTTP;    // HTTP socket type
 typedef boost::asio::ssl::stream<HTTP> HTTPS; // HTTPS stream, which include a nomal HTTP sockets
+typedef std::map<
+    /* path */
+    std::string, std::unordered_map<
+                     /* method, lambda expression container */
+                     std::string, std::function<void(std::ostream &, Request &)>>>
+    resource;
+
+struct Request
+{
+    std::string mathod;                                  //only GET and POST are acceptable
+    std::string path;                                    // target path
+    std::string version;                                 // http version
+    std::shared_ptr<std::istream> content;               // content
+    std::unordered_map<std::string, std::string> header; // headers
+    std::smatch matcher;                                 // regex matcher for path
+}
 }
 
 #endif // COMMON_HPP
