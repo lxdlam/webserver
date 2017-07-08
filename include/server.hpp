@@ -44,8 +44,8 @@ public:
 protected:
   // Boost.asio requested for io operation
   boost::asio::io_service io_service;
-  boost::asio::tcp::endpoint endpoint;
-  boost::asio::tcp::acceptor acceptor;
+  boost::asio::ip::tcp::endpoint endpoint;
+  boost::asio::ip::tcp::acceptor acceptor;
 
   // all resources
   std::vector<resource::iterator> all_resources;
@@ -62,13 +62,13 @@ protected:
 
   /*!
    * @brief: 处理请求然后应答
-   * @params: socket的共享指针s
+   * @params: socket的共享指针，用于数据传输
    * @return: 无
    * @authority: protected 
    * @author: Ramen
    * @since: 0.1
    */
-  void process(std::shared_ptr<socket> s);
+  void process(std::shared_ptr<socket>);
 
 private:
   /*!
@@ -80,6 +80,16 @@ private:
    * @since: 0.1
    */
   Request parseReq(std::istream &) const;
+
+  /*!
+   * @brief: 响应请求
+   * @params: socket类型的共享指针，用于数据传输；Requset类型共享指针，用于查看请求并作出相应
+   * @return: 无
+   * @authority: private
+   * @author: Ramen
+   * @since: 0.1
+   */
+  void respond(std::shared_ptr<socket>, std::shared_ptr<Request>) const;
 };
 
 template <typename socket>
@@ -88,12 +98,58 @@ class Server : public BaseServer<socket>
 };
 }
 
-void WebServer::BaseServer::start()
+template <typename socket>
+void WebServer::BaseServer<socket>::start()
 {
-  for (auto it = resource.begin())
+  for (auto it = resources.begin(); it != resources.end(); it++)
+  {
+    all_resources.push_back(it);
+  }
 }
 
-WebServer::Request WebServer::BaseServer::parseReq(std::istream &s) const
+template <typename socket>
+void WebServer::BaseServer<socket>::process(std::shared_ptr<socket> s)
+{
+  auto readBuffer = std::make_shared<boost::asio::streambuf>();
+
+  boost::asio::async_read_until(*s,
+                                *readBuffer,
+                                "\r\n\r\n" /* in http, a line is end with \r\n */,
+                                [this, s, readBuffer](const boost::system::error_code &ec, size_t bytes_transferred) {
+                                  if (!ec)
+                                  {
+                                    size_t total = readBuffer->size();
+                                    std::istream in(readBuffer.get());
+
+                                    auto request = std::make_shared<Request>();
+                                    *request = parseReq(in);
+
+                                    size_t extraBytes = total - bytes_transferred;
+
+                                    // if there is other content, read it and then
+                                    if (request->header.count("Content-Length") > 0)
+                                    {
+                                      boost::asio::async_read(*s,
+                                                              *readBuffer,
+                                                              boost::asio::transfer_exactly(stoull(request->header["Content-Length"]) - extraBytes),
+                                                              [this, s, readBuffer, request](const boost::system::error_code &ec, size_t bytes_transferred) {
+                                                                if (!ec)
+                                                                {
+                                                                  request->content = std::shared_ptr<std::istream>(new std::istream(readBuffer.get()));
+                                                                  respond(s, request);
+                                                                }
+                                                              });
+                                    }
+                                    else
+                                    {
+                                      respond(s, request);
+                                    }
+                                  }
+                                });
+}
+
+template <typename socket>
+WebServer::Request WebServer::BaseServer<socket>::parseReq(std::istream &s) const
 {
   Request request;
   // method, path, http version
@@ -123,5 +179,38 @@ WebServer::Request WebServer::BaseServer::parseReq(std::istream &s) const
   }
   return request;
 };
+
+template <typename socket>
+void WebServer::BaseServer<socket>::respond(std::shared_ptr<socket> s, std::shared_ptr<Request> r) const
+{
+  for (auto res : all_resources)
+  {
+    std::regex matcher(res->first);
+    std::smatch smRes;
+
+    // match if the path is requested
+    if (std::regex_match(r->path, smRes, matcher))
+    {
+      // if more than 1 method is used
+      if (res->second.count(r->method) > 0)
+      {
+        // rvalue reference
+        r->matcher = std::move(smRes);
+        auto writeBuffer = std::make_shared<boost::asio::streambuf>();
+        std::ostream response(writeBuffer.get());
+        res->second[r->method](response, *r);
+
+        boost::asio::async_write(*s,
+                                 *writeBuffer,
+                                 [this, s, r, writeBuffer](const boost::system::error_code &ec, size_t bytes_transferred) {
+                                   // keep alive
+                                   if (!ec && stof(r->version) > 1.05)
+                                     process(s);
+                                 });
+        return;
+      }
+    }
+  }
+}
 
 #endif // SERVER_HPP
