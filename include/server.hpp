@@ -23,8 +23,8 @@ template <typename socket>
 class BaseServer
 {
 public:
-  explicit BaseServer(unsigned short port = 8080) : endpoint(boost::asio::ip::tcp::v4(), port),
-                                                    acceptor(io_service, endpoint) {}
+  explicit BaseServer(unsigned short port) : endpoint(boost::asio::ip::tcp::v4(), port),
+                                             acceptor(io_service, endpoint) {}
   BaseServer(const BaseServer &) = delete; // avoiding copy
   BaseServer(BaseServer &&) = delete;      // avoiding copy
   ~BaseServer() = default;                 // using default deconstructor
@@ -40,6 +40,7 @@ public:
   void start();
 
   resource resources;
+  resource defResources;
 
 protected:
   // Boost.asio requested for io operation
@@ -48,7 +49,7 @@ protected:
   boost::asio::ip::tcp::acceptor acceptor;
 
   // all resources
-  std::vector<resource::iterator> all_resources;
+  std::vector<resource::iterator> allResources;
 
   /*!
    * @brief: 接受请求，纯虚函数，逻辑由各自实现
@@ -68,7 +69,7 @@ protected:
    * @author: Ramen
    * @since: 0.1
    */
-  void process(std::shared_ptr<socket>);
+  void process(std::shared_ptr<socket>) const;
 
 private:
   /*!
@@ -103,18 +104,25 @@ void WebServer::BaseServer<socket>::start()
 {
   for (auto it = resources.begin(); it != resources.end(); it++)
   {
-    all_resources.push_back(it);
+    allResources.push_back(it);
   }
+
+  for (auto it = defResources.begin(); it != defResources.end(); it++)
+  {
+    allResources.push_back(it);
+  }
+
+  accept();
 }
 
 template <typename socket>
-void WebServer::BaseServer<socket>::process(std::shared_ptr<socket> s)
+void WebServer::BaseServer<socket>::process(std::shared_ptr<socket> s) const
 {
   auto readBuffer = std::make_shared<boost::asio::streambuf>();
 
   boost::asio::async_read_until(*s,
                                 *readBuffer,
-                                "\r\n\r\n" /* in http, a line is end with \r\n */,
+                                "\r\n\r\n" /* in http protocol, a line is end with \r\n */,
                                 [this, s, readBuffer](const boost::system::error_code &ec, size_t bytes_transferred) {
                                   if (!ec)
                                   {
@@ -183,7 +191,7 @@ WebServer::Request WebServer::BaseServer<socket>::parseReq(std::istream &s) cons
 template <typename socket>
 void WebServer::BaseServer<socket>::respond(std::shared_ptr<socket> s, std::shared_ptr<Request> r) const
 {
-  for (auto res : all_resources)
+  for (auto res : allResources)
   {
     std::regex matcher(res->first);
     std::smatch smRes;
