@@ -10,7 +10,6 @@
 #define COMMON_HPP
 
 #include <fstream>
-#include <thread>
 #include <string>
 #include <regex>
 #include <vector>

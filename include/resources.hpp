@@ -13,7 +13,7 @@
 namespace WebServer
 {
 template <typename server>
-void routerApply(server &s)
+void applyRouter(server &s)
 {
     s.defResources["^/?(.*)$"]["GET"] = [](std::ostream &os, Request &r) {
         std::string filename = "web/";

@@ -15,7 +15,7 @@ using namespace WebServer;
 int main()
 {
     Server<HTTP> s(12345);
-    routerApply<Server<HTTP>>(s);
+    applyRouter<Server<HTTP>>(s);
     s.start();
     return 0;
 }

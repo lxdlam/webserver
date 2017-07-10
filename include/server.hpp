@@ -118,19 +118,7 @@ void WebServer::BaseServer<socket>::start()
 
   accept();
 
-  // for (size_t i = 1; i < nThreads; i++)
-  // {
-  //   threads.emplace_back([this]() {
-  //     io_service.run();
-  //   });
-  // }
-
   io_service.run();
-
-  // for (auto &t : threads)
-  // {
-  //   t.join();
-  // }
 }
 
 template <typename socket>
