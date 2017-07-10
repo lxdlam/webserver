@@ -7,7 +7,15 @@
  * Description: 主程序
  */
 #include "../include/common.hpp"
+#include "../include/http.hpp"
+#include "../include/resources.hpp"
+
+using namespace WebServer;
 
 int main()
 {
+    Server<HTTP> s(12345);
+    routerApply<Server<HTTP>>(s);
+    s.start();
+    return 0;
 }

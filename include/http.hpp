@@ -17,10 +17,10 @@ namespace WebServer
 {
 // template specialization
 template <>
-class Server<WebServer::HTTP> : public BaseServer<WebServer::HTTP>
+class Server<HTTP> : public BaseServer<HTTP>
 {
   public:
-    Server(unsigned short port = 8080) : BaseServer<WebServer::HTTP>(port){};
+    Server(unsigned short port = 8080) : BaseServer<HTTP>(port){};
 
   private:
     /*!
@@ -31,23 +31,20 @@ class Server<WebServer::HTTP> : public BaseServer<WebServer::HTTP>
    * @author: Ramen
    * @since: 0.1
    */
-    void accept();
+    void accept()
+    {
+        auto socket = std::make_shared<HTTP>(io_service);
+
+        acceptor.async_accept(*socket,
+                              [this, socket](const boost::system::error_code &ec) {
+                                  accept();
+                                  if (!ec)
+                                  {
+                                      process(socket);
+                                  }
+                              });
+    }
 };
-}
-
-template <>
-void WebServer::Server<WebServer::HTTP>::accept()
-{
-    auto socket = std::make_shared<WebServer::HTTP>(io_service);
-
-    acceptor.async_accept(*socket,
-                          [this, socket](const boost::system::error_code &ec) {
-                              accept();
-                              if (!ec)
-                              {
-                                  process(socket);
-                              }
-                          });
 }
 
 #endif // HTTP_HPP

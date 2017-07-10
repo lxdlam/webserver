@@ -48,8 +48,12 @@ protected:
   boost::asio::ip::tcp::endpoint endpoint;
   boost::asio::ip::tcp::acceptor acceptor;
 
+  // size_t nThreads;
+  // std::vector<std::thread> threads;
+
   // all resources
-  std::vector<resource::iterator> allResources;
+  std::vector<resource::iterator>
+      allResources;
 
   /*!
    * @brief: 接受请求，纯虚函数，逻辑由各自实现
@@ -113,6 +117,20 @@ void WebServer::BaseServer<socket>::start()
   }
 
   accept();
+
+  // for (size_t i = 1; i < nThreads; i++)
+  // {
+  //   threads.emplace_back([this]() {
+  //     io_service.run();
+  //   });
+  // }
+
+  io_service.run();
+
+  // for (auto &t : threads)
+  // {
+  //   t.join();
+  // }
 }
 
 template <typename socket>
