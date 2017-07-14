@@ -11,12 +11,12 @@
 
 #include <fstream>
 #include <string>
+#include <iostream>
 #include <regex>
 #include <vector>
 #include <map> // key-value container
 #include <unordered_map>
 #include <boost/asio.hpp>
-//#include <boost/asio/ssl.hpp> // https support
 #include "external/json.hpp" // json support
 
 namespace WebServer
@@ -31,7 +31,6 @@ struct Request
     std::smatch matcher;                                 // regex matcher for path
 };
 typedef boost::asio::ip::tcp::socket HTTP; // HTTP socket type
-//typedef boost::asio::ssl::stream<HTTP> HTTPS; // HTTPS stream, which include a nomal HTTP sockets
 typedef std::map<
     /* path */
     std::string, std::unordered_map<

@@ -13,6 +13,8 @@
 
 namespace WebServer
 {
+using std::cout;
+using std::endl;
 /*!
   * @brief: 服务器基类，传入socket类型作为模板
   * @base: 无基类
@@ -115,6 +117,8 @@ void WebServer::BaseServer<socket>::start()
   {
     allResources.push_back(it);
   }
+
+  cout << "Server started." << endl;
 
   accept();
 

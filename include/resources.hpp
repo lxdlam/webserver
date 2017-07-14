@@ -12,6 +12,14 @@
 
 namespace WebServer
 {
+
+using std::cout;
+using std::endl;
+
+auto logs = [](int status, Request &r) {
+    cout << r.method << " " << r.path << " " << status << endl;
+};
+
 template <typename server>
 void applyRouter(server &s)
 {
@@ -53,6 +61,7 @@ void applyRouter(server &s)
             os << "HTTP/1.1 200 OK\r\nContent-Length: " << length << "\r\n\r\n"
                << ifs.rdbuf();
 
+            logs(200, r);
             ifs.close();
         }
         else
@@ -61,6 +70,7 @@ void applyRouter(server &s)
             std::string content = "Could not open file " + filename;
             os << "HTTP/1.1 400 Bad r\r\nContent-Length: " << content.length() << "\r\n\r\n"
                << content;
+            logs(400, r);
         }
     };
 }
