@@ -9,13 +9,34 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
 
+#include <fstream>
+#include <string>
+#include <iostream>
 #include <regex>
-#include <thread>
+#include <vector>
+#include <map> // key-value container
+#include <unordered_map>
 #include <boost/asio.hpp>
-#include "external/json.hpp" // Add json support
+#include "external/json.hpp" // json support
 
-namespace webserver{
-    typedef boost::asio::ip::tcp::socket HTTP;
+namespace WebServer
+{
+struct Request
+{
+    std::string method;                                  //only GET and POST are acceptable
+    std::string path;                                    // target path
+    std::string version;                                 // http version
+    std::shared_ptr<std::istream> content;               // content
+    std::unordered_map<std::string, std::string> header; // headers
+    std::smatch matcher;                                 // regex matcher for path
+};
+typedef boost::asio::ip::tcp::socket HTTP; // HTTP socket type
+typedef std::map<
+    /* path */
+    std::string, std::unordered_map<
+                     /* method, lambda expression container */
+                     std::string, std::function<void(std::ostream &, Request &)>>>
+    resource;
 }
 
 #endif // COMMON_HPP
