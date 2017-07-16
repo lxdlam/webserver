@@ -50,9 +50,6 @@ protected:
   boost::asio::ip::tcp::endpoint endpoint;
   boost::asio::ip::tcp::acceptor acceptor;
 
-  // size_t nThreads;
-  // std::vector<std::thread> threads;
-
   // all resources
   std::vector<resource::iterator>
       allResources;
